@@ -68,9 +68,11 @@ for (let i = 0; i < 1000; i++) {
 const assetLoader = new GLTFLoader();
 const models = [];
 
-for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
-    console.log("url: ", url);
+function loadModelsSequentially(index) {
+    if (index >= urls.length) {
+        return;
+    }
+    const url = urls[index];
     assetLoader.load(url.href, function(gltf) {
         const model = gltf.scene.children[0];
         model.rotateX(Math.PI / 2);
@@ -89,10 +91,18 @@ for (let i = 0; i < urls.length; i++) {
             models[3].position.set(0.75,-100,-153);
             models[4].position.set(1.7,-100,-153);
         }
+        // Load the next model
+        loadModelsSequentially(index + 1);
     }, undefined, function(error) {
         console.error(error);
+        // Load the next model even if there's an error
+        loadModelsSequentially(index + 1);
     });
 }
+
+// Start loading models sequentially
+loadModelsSequentially(0);
+
 
 
 function updatePos(event) {
