@@ -70,6 +70,7 @@ const models = [];
 
 for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
+    console.log("url: ", url);
     assetLoader.load(url.href, function(gltf) {
         const model = gltf.scene.children[0];
         model.rotateX(Math.PI / 2);
@@ -115,7 +116,7 @@ document.addEventListener('mousemove', updatePos);
 
 
 camera.rotateX(THREE.MathUtils.degToRad(90));
-console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
+// console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 window.addEventListener('scroll', function() {
     var scrollHeight = document.documentElement.scrollHeight;
     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -143,7 +144,7 @@ window.addEventListener('scroll', function() {
         camera.rotation.x = 0;
     }
     // console.log("posY: ", camera.position.y);
-    console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
+    // console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 });
 
 function animate() {
