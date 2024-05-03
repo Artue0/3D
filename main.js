@@ -68,10 +68,10 @@ for (let i = 0; i < 1000; i++) {
 const assetLoader = new GLTFLoader();
 const models = [];
 
-urls.forEach(url => {
+for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
     assetLoader.load(url.href, function(gltf) {
         const model = gltf.scene.children[0];
-        // model.material = redMaterial;
         model.rotateX(Math.PI / 2);
         model.scale.set(2,2,2);
         models.push(gltf.scene);
@@ -79,9 +79,7 @@ urls.forEach(url => {
 
         const outlineGeometry = new THREE.EdgesGeometry(model.geometry);
         const outline = new THREE.LineSegments(outlineGeometry, whiteMaterial);
-        // outline.rotateX(Math.PI / 2);
         outline.scale.set(1.001, 1.001, 1.001);
-        // models.push(outline);
         model.add(outline);
         if (models.length === urls.length) {
             models[0].position.set(-1.7,-100,-153);
@@ -93,11 +91,12 @@ urls.forEach(url => {
     }, undefined, function(error) {
         console.error(error);
     });
-});
+}
+
 
 function updatePos(event) {
-    for (var i = 0; i <= 5; i++) {
-        const vector = new THREE.Vector3(models[i].position.x, models[i].position.y, models[i].position.z);
+    models.forEach((model) => {
+        const vector = new THREE.Vector3(model.position.x, model.position.y, model.position.z);
         vector.project(camera);
         const modelCenterX = (vector.x + 1) / 2 * window.innerWidth;
         const modelCenterY = (-vector.y + 1) / 2 * window.innerHeight;
@@ -108,9 +107,9 @@ function updatePos(event) {
         const horizontalValue = mouseX.toFixed(2) * Math.PI / 2;
         const verticalValue = mouseY.toFixed(2) * Math.PI / 2;
 
-        models[i].rotation.y = Math.max(Math.min(horizontalValue, Math.PI / 4), Math.PI / -4);
-        models[i].rotation.x = Math.max(Math.min(verticalValue, Math.PI / 4), Math.PI / -4);
-    }
+        model.rotation.y = Math.max(Math.min(horizontalValue, Math.PI / 4), Math.PI / -4);
+        model.rotation.x = Math.max(Math.min(verticalValue, Math.PI / 4), Math.PI / -4);
+    });
 }
 document.addEventListener('mousemove', updatePos);
 
