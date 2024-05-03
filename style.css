@@ -31,6 +31,7 @@ main {
   padding: 120px 0px;
   
   display: grid;
+  opacity: 0;
   grid-template-columns: repeat(12, 1fr);
 }
 

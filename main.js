@@ -1,5 +1,15 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+const urls = [
+    new URL('assets/models/A.glb', import.meta.url),
+    new URL('assets/models/R.glb', import.meta.url),
+    new URL('assets/models/T.glb', import.meta.url),
+    new URL('assets/models/U.glb', import.meta.url),
+    new URL('assets/models/E.glb', import.meta.url)
+];
+
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -11,11 +21,14 @@ document.body.appendChild(renderer.domElement);
 
 const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
 const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const redMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+var scrolled;
+
 
 const boxes = [];
 const frameLinesArray = [];
 
-for (let i = 0; i < 750; i++) {
+for (let i = 0; i < 1000; i++) {
     const [x, y, z, x2, y2, z2] = Array(6).fill().map(() => THREE.MathUtils.randFloatSpread(300));
     const [x3, y3, z3] = Array(6).fill().map(() => THREE.MathUtils.randFloatSpread(400));
     const [rot_x, rot_y, rot_z] = Array(3).fill().map(() => Math.random() * 360);
@@ -52,33 +65,82 @@ for (let i = 0; i < 750; i++) {
     frameLinesArray.push({ linesMesh: frameLines, rotationSpeed: rotationSpeed })
 }
 
+const assetLoader = new GLTFLoader();
+const models = [];
+
+urls.forEach(url => {
+    assetLoader.load(url.href, function(gltf) {
+        const model = gltf.scene.children[0];
+        // model.material = redMaterial;
+        model.rotateX(Math.PI / 2);
+        model.scale.set(2,2,2);
+        models.push(gltf.scene);
+        scene.add(gltf.scene);
+
+        const outlineGeometry = new THREE.EdgesGeometry(model.geometry);
+        const outline = new THREE.LineSegments(outlineGeometry, whiteMaterial);
+        // outline.rotateX(Math.PI / 2);
+        outline.scale.set(1.001, 1.001, 1.001);
+        // models.push(outline);
+        model.add(outline);
+        if (models.length === urls.length) {
+            models[0].position.set(-1.5,-100,-153);
+            models[1].position.set(-0.75,-100,-153);
+            models[2].position.set(0,-100,-153);
+            models[3].position.set(0.75,-100,-153);
+            models[4].position.set(1.5,-100,-153);
+        }
+    }, undefined, function(error) {
+        console.error(error);
+    });
+});
+
+function updatePos(event) {
+    models.forEach((model) => {
+        const vector = new THREE.Vector3(model.position.x, model.position.y, model.position.z);
+        vector.project(camera);
+        const modelCenterX = (vector.x + 1) / 2 * window.innerWidth;
+        const modelCenterY = (-vector.y + 1) / 2 * window.innerHeight;
+
+        const mouseX = (event.clientX - modelCenterX) / modelCenterX;
+        const mouseY = (event.clientY - modelCenterY) / modelCenterY;
+
+        const horizontalValue = mouseX.toFixed(2) * Math.PI / 2;
+        const verticalValue = mouseY.toFixed(2) * Math.PI / 2;
+
+        model.rotation.y = Math.max(Math.min(horizontalValue, Math.PI / 4), Math.PI / -4);
+        model.rotation.x = Math.max(Math.min(verticalValue, Math.PI / 4), Math.PI / -4);
+    });
+}
+document.addEventListener('mousemove', updatePos);
+
+
+camera.rotateX(THREE.MathUtils.degToRad(90));
+console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 window.addEventListener('scroll', function() {
     var scrollHeight = document.documentElement.scrollHeight;
     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     var clientHeight = document.documentElement.clientHeight;
 
-    var scrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
+    scrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
+    // console.log("cameraPos: ", camera.position);
+    // console.log(scrolled + "%");
 
-    console.log(scrolled + "%");
-
-    if (scrolled >= 0 && scrolled <= 20) {
-        console.log("20%");
-        camera.rotation.x = THREE.MathUtils.degToRad(-90 * (scrolled / 20));
-    } else if (scrolled > 20 && scrolled <= 40) {
-        camera.rotation.x = Math.PI/-2;
-        camera.position.z = 100 * (scrolled / 20 - 1);
-        console.log("40%");
-    } else if (scrolled > 40 && scrolled <= 60) {
-        camera.position.z = 100;
-        camera.position.y = 150 * (scrolled / 20 - 2);
-        camera.rotation.y = THREE.MathUtils.degToRad(180 * (scrolled / 20));
-        console.log("60%");
-    } else if (scrolled > 60 && scrolled <= 80) {
-        // camera.position.y = 150;
-        // camera.rotation.y = THREE.MathUtils.degToRad(180 * (scrolled / 20));
-        console.log("60%");
+    if (scrolled >= 0 && scrolled <= 30) {
+        // console.log("20%");
+        camera.rotation.x = THREE.MathUtils.degToRad(90 * (1 - scrolled / 30));
+    } else if (scrolled > 30 && scrolled <= 60) {
+        camera.rotation.x = 0;
+        camera.position.y = -100 * (scrolled / 30 - 1);
+        // console.log("40%");
+    } else if (scrolled > 60 && scrolled <= 90) {
+        camera.position.y = -100;
+        camera.position.z = -150 * (scrolled / 30 - 2);
+        // camera.rotation.y = THREE.MathUtils.degToRad(360 * (scrolled / 20));
+        // console.log("60%");
     }
-    console.log("y: ", camera.position.y);
+    // console.log("posY: ", camera.position.y);
+    console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 });
 
 function animate() {
@@ -97,6 +159,10 @@ function animate() {
         linesMesh.rotation.y += rotationSpeed;
         linesMesh.rotation.z += rotationSpeed;
     });
+
+    // models.forEach(model => {
+    //     model.rotation.y += 0.01;
+    // })
 
     renderer.render(scene, camera);
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mouse Position Values</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #values {
+        font-size: 24px;
+    }
+</style>
+</head>
+<body>
+<div id="values"></div>
+
+<script>
+const valuesDisplay = document.getElementById('values');
+
+// Function to calculate values based on mouse position
+function updateValues(event) {
+    const mouseX = event.clientX / window.innerWidth * 2 - 1; // Normalize mouse X position to range from -1 to 1
+    const mouseY = -(event.clientY / window.innerHeight * 2 - 1); // Invert Y-axis and normalize mouse Y position to range from -1 to 1
+    
+    const horizontalValue = mouseX.toFixed(2);
+    const verticalValue = mouseY.toFixed(2);
+
+    valuesDisplay.textContent = `Horizontal: ${horizontalValue}, Vertical: ${verticalValue}`;
+}
+
+// Event listener for mousemove
+document.addEventListener('mousemove', updateValues);
+</script>
+</body>
+</html>
