@@ -84,11 +84,11 @@ urls.forEach(url => {
         // models.push(outline);
         model.add(outline);
         if (models.length === urls.length) {
-            models[0].position.set(-1.5,-100,-153);
+            models[0].position.set(-1.7,-100,-153);
             models[1].position.set(-0.75,-100,-153);
             models[2].position.set(0,-100,-153);
             models[3].position.set(0.75,-100,-153);
-            models[4].position.set(1.5,-100,-153);
+            models[4].position.set(1.7,-100,-153);
         }
     }, undefined, function(error) {
         console.error(error);
@@ -96,8 +96,8 @@ urls.forEach(url => {
 });
 
 function updatePos(event) {
-    models.forEach((model) => {
-        const vector = new THREE.Vector3(model.position.x, model.position.y, model.position.z);
+    for (var i = 0; i <= 5; i++) {
+        const vector = new THREE.Vector3(models[i].position.x, models[i].position.y, models[i].position.z);
         vector.project(camera);
         const modelCenterX = (vector.x + 1) / 2 * window.innerWidth;
         const modelCenterY = (-vector.y + 1) / 2 * window.innerHeight;
@@ -108,9 +108,9 @@ function updatePos(event) {
         const horizontalValue = mouseX.toFixed(2) * Math.PI / 2;
         const verticalValue = mouseY.toFixed(2) * Math.PI / 2;
 
-        model.rotation.y = Math.max(Math.min(horizontalValue, Math.PI / 4), Math.PI / -4);
-        model.rotation.x = Math.max(Math.min(verticalValue, Math.PI / 4), Math.PI / -4);
-    });
+        models[i].rotation.y = Math.max(Math.min(horizontalValue, Math.PI / 4), Math.PI / -4);
+        models[i].rotation.x = Math.max(Math.min(verticalValue, Math.PI / 4), Math.PI / -4);
+    }
 }
 document.addEventListener('mousemove', updatePos);
 
@@ -138,6 +138,10 @@ window.addEventListener('scroll', function() {
         camera.position.z = -150 * (scrolled / 30 - 2);
         // camera.rotation.y = THREE.MathUtils.degToRad(360 * (scrolled / 20));
         // console.log("60%");
+    } else {
+        camera.position.z = -150;
+        camera.position.y = -100;
+        camera.rotation.x = 0;
     }
     // console.log("posY: ", camera.position.y);
     console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
