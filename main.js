@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
+import { Line2 } from "three/examples/jsm/lines/Line2";
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 const urls = [
@@ -21,9 +24,7 @@ document.body.appendChild(renderer.domElement);
 
 const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
 const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-const redMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
 var scrolled;
-
 
 const boxes = [];
 const frameLinesArray = [];
@@ -39,7 +40,7 @@ for (let i = 0; i < 1000; i++) {
     const smallStar = new THREE.Mesh(smallStarGeometry, whiteMaterial);
     const box_geometry = new THREE.BoxGeometry(2.03, 2.03, 2.03);
     const box = new THREE.Mesh(box_geometry, blackMaterial);
-
+    // znalazłem sposób na internecie jak zrobić fajnie linie i faktycznie to są linie
     const frameGeometry = new THREE.BoxGeometry(2, 2, 2);
     const frameEdges = new THREE.EdgesGeometry(frameGeometry);
     const frameLines = new THREE.LineSegments(frameEdges, whiteMaterial);
@@ -48,7 +49,7 @@ for (let i = 0; i < 1000; i++) {
     frameLines.scale.set(scale, scale, scale);
     frameLines.position.set(x2, y2, z2);
 
-    frameLines.scale.multiplyScalar(1 + 0.02);
+    frameLines.scale.multiplyScalar(1 + 0.03);
 
     box.rotation.set(rot_x, rot_y, rot_z);
     box.scale.set(scale, scale, scale);
@@ -67,6 +68,19 @@ for (let i = 0; i < 1000; i++) {
 
 const assetLoader = new GLTFLoader();
 const models = [];
+let allPoints = [];
+let line, outlineGeometry;
+const matLine = new LineMaterial( {
+
+    color: 0xffffff,
+    linewidth: 5, // in world units with size attenuation, pixels otherwise
+    vertexColors: true,
+
+    //resolution:  // to be set by renderer, eventually
+    dashed: false,
+    alphaToCoverage: true,
+
+} );
 
 function loadModelsSequentially(index) {
     if (index >= urls.length) {
@@ -82,8 +96,9 @@ function loadModelsSequentially(index) {
 
         const outlineGeometry = new THREE.EdgesGeometry(model.geometry);
         const outline = new THREE.LineSegments(outlineGeometry, whiteMaterial);
-        outline.scale.set(1.001, 1.001, 1.001);
+        outline.scale.set(1.03, 1.03, 1.03);
         model.add(outline);
+
         if (models.length === urls.length) {
             models[0].position.set(-1.7,-100,-153);
             models[1].position.set(-0.75,-100,-153);
@@ -91,19 +106,13 @@ function loadModelsSequentially(index) {
             models[3].position.set(0.75,-100,-153);
             models[4].position.set(1.7,-100,-153);
         }
-        // Load the next model
         loadModelsSequentially(index + 1);
     }, undefined, function(error) {
         console.error(error);
-        // Load the next model even if there's an error
         loadModelsSequentially(index + 1);
     });
 }
-
-// Start loading models sequentially
 loadModelsSequentially(0);
-
-
 
 function updatePos(event) {
     models.forEach((model) => {
@@ -124,37 +133,27 @@ function updatePos(event) {
 }
 document.addEventListener('mousemove', updatePos);
 
-
 camera.rotateX(THREE.MathUtils.degToRad(90));
-// console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 window.addEventListener('scroll', function() {
     var scrollHeight = document.documentElement.scrollHeight;
     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     var clientHeight = document.documentElement.clientHeight;
 
     scrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
-    // console.log("cameraPos: ", camera.position);
-    // console.log(scrolled + "%");
 
     if (scrolled >= 0 && scrolled <= 30) {
-        // console.log("20%");
         camera.rotation.x = THREE.MathUtils.degToRad(90 * (1 - scrolled / 30));
     } else if (scrolled > 30 && scrolled <= 60) {
         camera.rotation.x = 0;
         camera.position.y = -100 * (scrolled / 30 - 1);
-        // console.log("40%");
     } else if (scrolled > 60 && scrolled <= 90) {
         camera.position.y = -100;
         camera.position.z = -150 * (scrolled / 30 - 2);
-        // camera.rotation.y = THREE.MathUtils.degToRad(360 * (scrolled / 20));
-        // console.log("60%");
     } else {
         camera.position.z = -150;
         camera.position.y = -100;
         camera.rotation.x = 0;
     }
-    // console.log("posY: ", camera.position.y);
-    // console.log("rotX: ", THREE.MathUtils.radToDeg(camera.rotation.x));
 });
 
 function animate() {
@@ -173,10 +172,6 @@ function animate() {
         linesMesh.rotation.y += rotationSpeed;
         linesMesh.rotation.z += rotationSpeed;
     });
-
-    // models.forEach(model => {
-    //     model.rotation.y += 0.01;
-    // })
 
     renderer.render(scene, camera);
 }
